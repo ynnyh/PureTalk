@@ -1,0 +1,59 @@
+[package]
+name = "purevoice"
+version = "0.0.1"
+description = "清语 - 纯粹的语音输入工具"
+authors = ["you"]
+license = "Apache-2.0"
+repository = ""
+edition = "2021"
+rust-version = "1.77.2"
+
+[lib]
+name = "purevoice_lib"
+crate-type = ["rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+serde_json = "1"
+serde = { version = "1", features = ["derive"] }
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-global-shortcut = "2"
+
+# 录音
+cpal = "0.17"
+hound = "3.5"
+
+# 网络 + WebSocket（云端 STT）
+tokio = { version = "1", features = ["sync", "time", "process", "rt", "macros"] }
+tokio-tungstenite = { version = "0.24", features = ["rustls-tls-webpki-roots"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls", "stream"] }
+futures-util = "0.3"
+
+# 剪贴板注入
+arboard = "3.6"
+enigo = "0.3"
+
+# 工具
+once_cell = "1"
+flate2 = "1"
+dirs-next = "2"
+open = "5"
+
+# 解压 sherpa-onnx 预编译包（纯 Rust，不碰 C 编译器）
+bzip2-rs = "0.1"
+tar = "0.4"
+
+# 密钥链
+keyring = { version = "3", features = ["windows-native", "apple-native", "linux-native-sync-persistent"] }
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.59", features = ["Win32_UI_WindowsAndMessaging"] }
+
+[profile.release]
+strip = true
+lto = "thin"
+codegen-units = 1
+opt-level = "s"
+panic = "abort"
