@@ -24,7 +24,7 @@ pub fn show_indicator(app: &tauri::AppHandle, state: &str) {
             tauri::WebviewUrl::App("src/windows/indicator/index.html".into()),
         )
         .title("")
-        .inner_size(220.0, 40.0)
+        .inner_size(360.0, 64.0)
         .decorations(false)
         .transparent(true)
         .always_on_top(true)
@@ -40,8 +40,8 @@ pub fn show_indicator(app: &tauri::AppHandle, state: &str) {
             if let Some(monitor) = monitor {
                 let screen_size = monitor.size();
                 let scale = monitor.scale_factor();
-                let win_w = 220.0;
-                let win_h = 40.0;
+                let win_w = 360.0;
+                let win_h = 64.0;
                 let x = (screen_size.width as f64 / scale - win_w) / 2.0;
                 let y = screen_size.height as f64 / scale - win_h - 60.0;
                 let _ = window.set_position(tauri::Position::Logical(tauri::LogicalPosition::new(x, y)));

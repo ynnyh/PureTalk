@@ -1,8 +1,10 @@
 pub mod assets;
 pub mod clipboard;
 pub mod recording;
+pub mod server;
 pub mod stt_cloud;
 pub mod stt_local;
+pub mod ws_client;
 
 use crate::config;
 use crate::indicator;
@@ -11,9 +13,11 @@ use serde::Serialize;
 use std::sync::Mutex;
 use tauri::{AppHandle, Emitter};
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
+use tokio::sync::mpsc;
 
 static VOICE_BUSY: Lazy<Mutex<bool>> = Lazy::new(|| Mutex::new(false));
 static REGISTERED_HOTKEY: Lazy<Mutex<Option<String>>> = Lazy::new(|| Mutex::new(None));
+static STREAMING_TX: Lazy<Mutex<Option<mpsc::Sender<Vec<f32>>>>> = Lazy::new(|| Mutex::new(None));
 
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -98,10 +102,67 @@ async fn start_recording(app: AppHandle) {
         *busy = false;
         indicator::hide_indicator(&app);
         let _ = app.emit("voice:error", VoiceError { message: e });
+        return;
+    }
+
+    // Start streaming task if streaming model is ready
+    if assets::streaming_assets_ready() {
+        let app_clone = app.clone();
+        tauri::async_runtime::spawn(async move {
+            if let Err(e) = start_streaming_task(app_clone).await {
+                eprintln!("[streaming] 流式任务失败: {}", e);
+            }
+        });
     }
 }
 
+async fn start_streaming_task(app: AppHandle) -> Result<(), String> {
+    // Connect to online server
+    let (audio_tx, mut text_rx) = ws_client::online_stream_connect().await?;
+
+    // Create channel for recording -> streaming pipeline
+    let (rec_tx, mut rec_rx) = mpsc::channel::<Vec<f32>>(8);
+
+    // Register tx in recording module
+    recording::set_stream_tx(Some(rec_tx));
+
+    // Store WS tx for cleanup
+    {
+        let mut tx_guard = STREAMING_TX.lock().unwrap();
+        *tx_guard = Some(audio_tx.clone());
+    }
+
+    // Spawn pipeline: rec_rx -> resample -> audio_tx (online WS)
+    let audio_tx_clone = audio_tx.clone();
+    tauri::async_runtime::spawn(async move {
+        while let Some(chunk) = rec_rx.recv().await {
+            // chunk is at device sample rate, need to resample to 16kHz for online server
+            // For simplicity, assume device is already 16kHz or close (TODO: proper resampling)
+            // Send mono chunk (recording already converts to mono in stop())
+            if audio_tx_clone.send(chunk).await.is_err() {
+                break;
+            }
+        }
+    });
+
+    // Spawn task to listen for streaming text and emit to frontend
+    tauri::async_runtime::spawn(async move {
+        while let Some(text) = text_rx.recv().await {
+            let _ = app.emit("voice:streaming-text", VoiceTranscribed { text });
+        }
+    });
+
+    Ok(())
+}
+
 async fn stop_and_transcribe(app: AppHandle) {
+    // Stop streaming if active
+    recording::set_stream_tx(None); // Clear recording callback tx
+    {
+        let mut tx_guard = STREAMING_TX.lock().unwrap();
+        *tx_guard = None; // Drop WS sender to signal end
+    }
+
     indicator::show_indicator(&app, "transcribing");
 
     let samples = match recording::stop() {
@@ -125,11 +186,25 @@ async fn stop_and_transcribe(app: AppHandle) {
         return;
     }
 
+    // Trim silence using energy threshold
+    let trimmed = recording::trim_silence_energy(&samples);
+
+    if trimmed.is_empty() {
+        let mut busy = VOICE_BUSY.lock().unwrap();
+        *busy = false;
+        indicator::hide_indicator(&app);
+        let _ = app.emit("voice:error", VoiceError {
+            message: "音频过短或全为静音".to_string(),
+        });
+        return;
+    }
+
+    // 2-pass: always use local SenseVoice for final transcription (high quality + punctuation)
     let cfg = config::load_config();
     let result = if cfg.voice_engine == "cloud" {
-        stt_cloud::transcribe(&samples, &cfg).await
+        stt_cloud::transcribe(&trimmed, &cfg).await
     } else {
-        stt_local::transcribe(&samples, &cfg)
+        stt_local::transcribe(&trimmed, &cfg).await
     };
 
     match result {
@@ -213,4 +288,19 @@ pub fn voice_cloud_status() -> serde_json::Value {
     serde_json::json!({
         "hasCredentials": !cfg.voice_cloud.volc_app_id.is_empty() && !cfg.voice_cloud.volc_access_token.is_empty()
     })
+}
+
+#[tauri::command]
+pub fn voice_streaming_status() -> serde_json::Value {
+    serde_json::json!({
+        "ready": assets::streaming_assets_ready()
+    })
+}
+
+#[tauri::command]
+pub async fn voice_download_streaming(app: tauri::AppHandle, proxy: Option<String>) -> Result<(), String> {
+    let proxy = proxy.unwrap_or_default();
+    let cfg = config::load_config();
+    let proxy_to_use = if proxy.is_empty() { &cfg.download_proxy } else { &proxy };
+    assets::download_streaming_model(&app, proxy_to_use).await
 }

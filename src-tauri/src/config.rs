@@ -32,6 +32,8 @@ pub struct AppConfig {
     pub download_proxy: String,
     #[serde(default = "default_true")]
     pub first_run: bool,
+    #[serde(default)]
+    pub autostart: bool,
 }
 
 fn default_hotkey() -> String {
@@ -50,6 +52,7 @@ impl Default for AppConfig {
             voice_cloud: VoiceCloudConfig::default(),
             download_proxy: String::new(),
             first_run: true,
+            autostart: false,
         }
     }
 }
@@ -96,4 +99,36 @@ pub fn config_load() -> AppConfig {
 #[tauri::command]
 pub fn config_save(config: AppConfig) -> Result<(), String> {
     save_config(&config)
+}
+
+#[tauri::command]
+pub async fn autostart_enable(app: tauri::AppHandle) -> Result<(), String> {
+    use tauri_plugin_autostart::ManagerExt;
+
+    let autostart = app.autolaunch();
+    autostart
+        .enable()
+        .map_err(|e| format!("启用开机自启失败: {}", e))?;
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn autostart_disable(app: tauri::AppHandle) -> Result<(), String> {
+    use tauri_plugin_autostart::ManagerExt;
+
+    let autostart = app.autolaunch();
+    autostart
+        .disable()
+        .map_err(|e| format!("禁用开机自启失败: {}", e))?;
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn autostart_is_enabled(app: tauri::AppHandle) -> Result<bool, String> {
+    use tauri_plugin_autostart::ManagerExt;
+
+    let autostart = app.autolaunch();
+    autostart
+        .is_enabled()
+        .map_err(|e| format!("检查自启状态失败: {}", e))
 }

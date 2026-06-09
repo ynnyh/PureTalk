@@ -3,80 +3,70 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>清语 — 纯粹的语音输入</title>
+  <title>清语输入法 — 纯粹的语音输入工具</title>
+  <meta name="description" content="清语输入法 — Windows 纯粹语音输入工具，本地离线识别，无需联网，全局热键语音转文字，基于 SenseVoice + sherpa-onnx" />
+  <meta name="keywords" content="语音输入法,语音输入,语音转文字,离线语音识别,SenseVoice,sherpa-onnx,Windows 输入法,语音输入工具,清语" />
   <link rel="stylesheet" href="style.css" />
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
 </head>
 <body>
   <nav class="nav">
     <div class="container nav-inner">
-      <span class="nav-brand">清语</span>
+      <span class="nav-brand">清语输入法</span>
       <div class="nav-links">
         <a href="#philosophy">理念</a>
-        <a href="#privacy">安全</a>
+        <a href="#privacy">隐私</a>
         <a href="#features">特性</a>
-        <a href="#start">开始</a>
-        <a href="https://github.com/ynnyh/PureTalk">GitHub</a>
+        <a href="#thanks">鸣谢</a>
+        <a href="#start">下载</a>
+        <a class="nav-ghost" href="https://github.com/ynnyh/PureTalk">GitHub</a>
       </div>
     </div>
   </nav>
 
   <header class="hero">
-    <div class="container">
-      <div class="hero-badge">PureTalk</div>
-      <h1 class="hero-title">清语</h1>
+    <div class="hero-glow" aria-hidden="true"></div>
+    <div class="container hero-inner">
+      <span class="hero-badge">PURETALK · WINDOWS 语音输入法</span>
+      <h1 class="hero-title">清语输入法</h1>
       <p class="hero-sub">纯粹的语音输入</p>
-      <p class="hero-desc">Windows 上纯粹的语音输入工具。<br>按下快捷键，说话，松开。文字出现在你正在输入的地方，仅此而已。</p>
+      <p class="hero-desc">按下快捷键,说话,松开。<br />文字出现在你正在输入的地方——仅此而已。</p>
       <div class="hero-actions">
-        <a href="https://github.com/ynnyh/PureTalk/releases" class="btn btn-primary">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v8m0 0l-3-3m3 3l3-3M3 12h10"/></svg>
-          下载
+        <a class="btn btn-primary" href="https://github.com/ynnyh/PureTalk/releases">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M8 2v8m0 0l-3-3m3 3l3-3M3 13h10" /></svg>
+          下载清语
         </a>
-        <a href="https://github.com/ynnyh/PureTalk" class="btn btn-ghost">GitHub</a>
+        <a class="btn btn-ghost" href="https://github.com/ynnyh/PureTalk">在 GitHub 查看</a>
       </div>
-      <div class="hero-demo">
-        <div class="demo-bar">
-          <span class="demo-key">Ctrl</span>
-          <span class="demo-plus">+</span>
-          <span class="demo-key">Shift</span>
-          <span class="demo-plus">+</span>
-          <span class="demo-key">Space</span>
+
+      <div class="hero-demo" id="demo">
+        <div class="demo-keys">
+          <kbd>Ctrl</kbd><span>+</span><kbd>Shift</kbd><span>+</span><kbd>Space</kbd>
         </div>
-        <div class="demo-hint">按下 → 说话 → 再按 → 完成</div>
+        <div class="demo-panel">
+          <div class="demo-wave" aria-hidden="true">
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          </div>
+          <div class="demo-io">
+            <span class="demo-status">按住说话</span>
+            <span class="demo-text"></span>
+          </div>
+        </div>
       </div>
     </div>
   </header>
 
   <section id="philosophy" class="philosophy">
     <div class="container">
-      <h2 class="section-title">设计理念</h2>
-      <p class="section-sub">零意外原则：每个功能必须是刻意的，每个操作必须是用户预期的，每个结果必须是可预测的</p>
+      <p class="eyebrow">设计理念</p>
+      <h2 class="section-title">零意外原则</h2>
+      <p class="section-sub">每个功能都是刻意的,每个操作都是你预期的,每个结果都是可预测的。</p>
       <div class="principles">
-        <div class="principle">
-          <div class="principle-num">01</div>
-          <h3>纯粹录音</h3>
-          <p>一键录音，一键停止，无多余交互</p>
-        </div>
-        <div class="principle">
-          <div class="principle-num">02</div>
-          <h3>纯粹转写</h3>
-          <p>不做大模型处理，不搞"智能优化"，只做语音转文字</p>
-        </div>
-        <div class="principle">
-          <div class="principle-num">03</div>
-          <h3>纯粹输出</h3>
-          <p>文字就是文字，复制即用，不自动发送</p>
-        </div>
-        <div class="principle">
-          <div class="principle-num">04</div>
-          <h3>不打扰</h3>
-          <p>不问不答，交互由用户掌控</p>
-        </div>
-        <div class="principle">
-          <div class="principle-num">05</div>
-          <h3>零意外</h3>
-          <p>每个功能都是有意为之，每个结果都可预期</p>
-        </div>
+        <article class="principle"><div class="principle-num">01</div><h3>纯粹录音</h3><p>一键录,一键停,没有多余交互。</p></article>
+        <article class="principle"><div class="principle-num">02</div><h3>纯粹转写</h3><p>不做大模型"优化",只把语音变成文字。</p></article>
+        <article class="principle"><div class="principle-num">03</div><h3>纯粹输出</h3><p>文字就是文字,复制即用,绝不自动发送。</p></article>
+        <article class="principle"><div class="principle-num">04</div><h3>不打扰</h3><p>不问不答,交互完全由你掌控。</p></article>
+        <article class="principle"><div class="principle-num">05</div><h3>零意外</h3><p>所见即所得,结果永远可预期。</p></article>
       </div>
     </div>
   </section>
@@ -84,146 +74,69 @@
   <section id="privacy" class="privacy">
     <div class="container">
       <div class="privacy-header">
-        <div class="privacy-icon">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        </div>
-        <h2 class="section-title">你的数据，只属于你</h2>
-        <p class="section-sub">清语的一切运算都在你的电脑上完成。不登录、不联网、不上传，你的语音和文字永远不会离开你的设备。</p>
+        <span class="privacy-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="11" width="18" height="10" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+        </span>
+        <h2 class="section-title">你的数据,只属于你</h2>
+        <p class="section-sub">所有运算都在你的电脑上完成。不登录、不联网、不上传——语音和文字永远不会离开这台设备。</p>
       </div>
       <div class="privacy-grid">
-        <div class="privacy-item">
-          <div class="privacy-check">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          </div>
-          <div>
-            <h4>无需注册</h4>
-            <p>没有账号系统，没有登录流程，下载即用</p>
-          </div>
-        </div>
-        <div class="privacy-item">
-          <div class="privacy-check">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          </div>
-          <div>
-            <h4>完全离线</h4>
-            <p>本地引擎无需联网，断网也能正常使用</p>
-          </div>
-        </div>
-        <div class="privacy-item">
-          <div class="privacy-check">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          </div>
-          <div>
-            <h4>零数据采集</h4>
-            <p>不收集任何使用数据，没有遥测，没有埋点</p>
-          </div>
-        </div>
-        <div class="privacy-item">
-          <div class="privacy-check">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          </div>
-          <div>
-            <h4>本地处理</h4>
-            <p>语音识别在本机完成，音频不发送到任何服务器</p>
-          </div>
-        </div>
-        <div class="privacy-item">
-          <div class="privacy-check">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          </div>
-          <div>
-            <h4>开源可审计</h4>
-            <p>代码完全开源，任何人都可以审查每一行代码</p>
-          </div>
-        </div>
-        <div class="privacy-item">
-          <div class="privacy-check">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          </div>
-          <div>
-            <h4>无后台驻留</h4>
-            <p>不偷偷联网，不上传后台，托盘图标是你唯一的交互入口</p>
-          </div>
-        </div>
+        <div class="privacy-item"><span class="privacy-check" aria-hidden="true">✓</span><div><h4>无需注册</h4><p>没有账号,下载即用。</p></div></div>
+        <div class="privacy-item"><span class="privacy-check" aria-hidden="true">✓</span><div><h4>完全离线</h4><p>本地引擎,断网照常工作。</p></div></div>
+        <div class="privacy-item"><span class="privacy-check" aria-hidden="true">✓</span><div><h4>零数据采集</h4><p>没有遥测,没有埋点。</p></div></div>
+        <div class="privacy-item"><span class="privacy-check" aria-hidden="true">✓</span><div><h4>本地处理</h4><p>音频不发往任何服务器。</p></div></div>
+        <div class="privacy-item"><span class="privacy-check" aria-hidden="true">✓</span><div><h4>开源可审计</h4><p>每一行代码都可查看。</p></div></div>
+        <div class="privacy-item"><span class="privacy-check" aria-hidden="true">✓</span><div><h4>无后台驻留</h4><p>托盘图标是唯一入口。</p></div></div>
       </div>
     </div>
   </section>
 
   <section id="features" class="features">
     <div class="container">
-      <h2 class="section-title">特性</h2>
+      <p class="eyebrow">特性</p>
+      <h2 class="section-title">少,但是更好</h2>
       <div class="feature-grid">
-        <div class="feature">
-          <div class="feature-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 8v8m-4-4h8"/></svg>
-          </div>
-          <h4>本地优先</h4>
-          <p>SenseVoice 模型本地运行，隐私安全，离线可用</p>
-        </div>
-        <div class="feature">
-          <div class="feature-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          </div>
-          <h4>极速转写</h4>
-          <p>非自回归模型，纯 CPU 亚秒级识别</p>
-        </div>
-        <div class="feature">
-          <div class="feature-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"/></svg>
-          </div>
-          <h4>中英混说</h4>
-          <p>自动语言检测，自带标点符号</p>
-        </div>
-        <div class="feature">
-          <div class="feature-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z"/></svg>
-          </div>
-          <h4>全局热键</h4>
-          <p>任意应用中一键触发，无需切换窗口</p>
-        </div>
-        <div class="feature">
-          <div class="feature-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"/></svg>
-          </div>
-          <h4>云端可选</h4>
-          <p>火山引擎云端 ASR，更快更准</p>
-        </div>
-        <div class="feature">
-          <div class="feature-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          </div>
-          <h4>Windows 专属</h4>
-          <p>专为 Windows 打造，解决 Windows 缺少好用语音输入工具的痛点</p>
-        </div>
+        <article class="feature"><h4>本地优先</h4><p>SenseVoice 模型本机运行,隐私安全、离线可用。</p></article>
+        <article class="feature"><h4>极速转写</h4><p>非自回归模型,纯 CPU 亚秒级识别。</p></article>
+        <article class="feature"><h4>中英混说</h4><p>自动语言检测,自带标点符号。</p></article>
+        <article class="feature"><h4>全局热键</h4><p>任意应用一键触发,无需切换窗口。</p></article>
+        <article class="feature"><h4>云端可选</h4><p>火山引擎流式 ASR,更快更准。</p></article>
+        <article class="feature"><h4>Windows 专属</h4><p>专为 Windows 打造,补上系统的语音输入短板。</p></article>
       </div>
     </div>
   </section>
 
   <section id="start" class="start">
     <div class="container">
-      <h2 class="section-title">快速开始</h2>
-      <div class="start-steps">
-        <div class="start-step">
-          <div class="start-step-num">1</div>
-          <div class="start-step-body">
-            <h3>下载安装</h3>
-            <p>从 GitHub Releases 下载 Windows 安装包，双击安装</p>
-          </div>
-        </div>
-        <div class="start-step">
-          <div class="start-step-num">2</div>
-          <div class="start-step-body">
-            <h3>首次设置</h3>
-            <p>安装后自动弹出设置窗口，选择引擎并下载语音资产</p>
-          </div>
-        </div>
-        <div class="start-step">
-          <div class="start-step-num">3</div>
-          <div class="start-step-body">
-            <h3>开始使用</h3>
-            <p>在任意输入框中按下快捷键，说话，再次按下，文字自动输入</p>
-          </div>
-        </div>
+      <p class="eyebrow">快速开始</p>
+      <h2 class="section-title">三步,开始说话</h2>
+      <ol class="start-steps">
+        <li class="start-step"><span class="start-step-num">1</span><div class="start-step-body"><h3>下载安装</h3><p>从 GitHub Releases 下载 Windows 安装包,双击安装。</p></div></li>
+        <li class="start-step"><span class="start-step-num">2</span><div class="start-step-body"><h3>首次设置</h3><p>自动弹出设置窗口,选择引擎并下载语音资产。</p></div></li>
+        <li class="start-step"><span class="start-step-num">3</span><div class="start-step-body"><h3>开始使用</h3><p>任意输入框按下快捷键,说话,再按一次完成输入。</p></div></li>
+      </ol>
+      <div class="start-cta">
+        <a class="btn btn-primary" href="https://github.com/ynnyh/PureTalk/releases">下载清语 · 免费开源</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="thanks" class="thanks">
+    <div class="container">
+      <p class="eyebrow">开源致谢</p>
+      <h2 class="section-title">鸣谢</h2>
+      <p class="section-sub">清语站在开源的肩膀上。本地语音识别的能力,来自这些项目的无私分享。</p>
+      <div class="thanks-grid">
+        <a class="thanks-card" href="https://github.com/modelscope/FunASR" target="_blank" rel="noopener">
+          <h4>FunASR · FunAudioLLM</h4>
+          <p>语音识别模型 SenseVoice 来自达摩院 FunAudioLLM / FunASR 的开源工作 —— 让本地、多语种、高质量的语音识别成为可能。</p>
+          <span class="thanks-link">github.com/modelscope/FunASR ↗</span>
+        </a>
+        <a class="thanks-card" href="https://github.com/k2-fsa/sherpa-onnx" target="_blank" rel="noopener">
+          <h4>sherpa-onnx · k2-fsa</h4>
+          <p>本地推理运行时基于 k2-fsa 的 sherpa-onnx —— 无需联网,在你自己的设备上完成每一次识别。</p>
+          <span class="thanks-link">github.com/k2-fsa/sherpa-onnx ↗</span>
+        </a>
       </div>
     </div>
   </section>
@@ -231,11 +144,46 @@
   <footer class="footer">
     <div class="container footer-inner">
       <span class="footer-brand">清语</span>
-      <span class="footer-sep">·</span>
-      <a href="https://github.com/ynnyh/PureTalk">GitHub</a>
-      <span class="footer-sep">·</span>
-      <a href="https://github.com/ynnyh/PureTalk/blob/main/LICENSE">Apache 2.0</a>
+      <span class="footer-meta">PureTalk · <a href="https://github.com/ynnyh/PureTalk/blob/main/LICENSE">Apache 2.0</a> · <a href="https://github.com/ynnyh/PureTalk">ynnyh/PureTalk</a></span>
     </div>
   </footer>
+
+  <script>
+    (function () {
+      var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      var demo = document.getElementById("demo");
+      if (!demo) return;
+      var textEl = demo.querySelector(".demo-text");
+      var statusEl = demo.querySelector(".demo-status");
+      var text = "你好,这是清语。";
+      if (reduce) {
+        textEl.textContent = text;
+        if (statusEl) statusEl.textContent = "完成";
+        return;
+      }
+      var timers = [];
+      function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
+      function clearAll() { timers.forEach(clearTimeout); timers = []; }
+      function idle() {
+        clearAll(); textEl.textContent = ""; demo.classList.remove("is-recording");
+        if (statusEl) statusEl.textContent = "按住说话"; later(listen, 1000);
+      }
+      function listen() {
+        demo.classList.add("is-recording");
+        if (statusEl) statusEl.textContent = "正在聆听…"; later(transcribe, 1700);
+      }
+      function transcribe() {
+        demo.classList.remove("is-recording");
+        if (statusEl) statusEl.textContent = "转写中…";
+        var i = 0;
+        (function type() {
+          textEl.textContent = text.slice(0, i); i++;
+          if (i <= text.length) later(type, 72);
+          else { if (statusEl) statusEl.textContent = "完成 ✓"; later(idle, 2400); }
+        })();
+      }
+      idle();
+    })();
+  </script>
 </body>
 </html>

@@ -1,10 +1,18 @@
 mod config;
 mod indicator;
 mod tray;
+pub mod updater;
 mod voice;
 
 pub fn run() {
+    use tauri::Emitter;
+
     tauri::Builder::default()
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_autostart::init(
+            tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+            None,
+        ))
         .plugin(voice::global_shortcut_plugin())
         .setup(|app| {
             tray::setup_tray(app)?;
@@ -12,6 +20,24 @@ pub fn run() {
             if let Err(e) = voice::sync_hotkey(app.handle()) {
                 eprintln!("[voice] 启动注册语音热键失败: {}", e);
             }
+
+            // 启动 offline server(常驻,首次冷启动会慢,后续转写快)
+            tauri::async_runtime::spawn(async move {
+                if let Err(e) = voice::server::start_offline_server() {
+                    eprintln!("[server] 启动 offline server 失败: {}", e);
+                }
+            });
+
+            // 启动 online server(流式,如果模型已下载)
+            tauri::async_runtime::spawn(async move {
+                if voice::assets::streaming_assets_ready() {
+                    if let Err(e) = voice::server::start_online_server() {
+                        eprintln!("[server] 启动 online server 失败: {}", e);
+                    }
+                } else {
+                    eprintln!("[server] 流式模型未下载,跳过 online server 启动");
+                }
+            });
 
             // 首次运行：打开设置窗口
             let cfg = config::load_config();
@@ -21,6 +47,25 @@ pub fn run() {
                     // 等待托盘图标就绪
                     tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
                     tray::open_settings(&handle);
+                });
+            } else {
+                // 非首次运行：后台检查更新
+                let handle = app.handle().clone();
+                tauri::async_runtime::spawn(async move {
+                    tokio::time::sleep(tokio::time::Duration::from_secs(3)).await;
+                    match updater::check_update(handle.clone()).await {
+                        Ok(status) if status.available => {
+                            // 发现新版本，打开设置窗口并显示更新提示
+                            let _ = handle.emit("update:available", status);
+                            tray::open_settings(&handle);
+                        }
+                        Ok(_) => {
+                            // 已是最新版本
+                        }
+                        Err(e) => {
+                            eprintln!("[updater] 检查更新失败: {}", e);
+                        }
+                    }
                 });
             }
 
@@ -35,10 +80,22 @@ pub fn run() {
             voice::voice_open_dir,
             voice::voice_hotkey_sync,
             voice::voice_cloud_status,
+            voice::voice_streaming_status,
+            voice::voice_download_streaming,
             config::config_load,
             config::config_save,
+            config::autostart_enable,
+            config::autostart_disable,
+            config::autostart_is_enabled,
+            updater::check_update,
+            updater::install_update,
         ])
         .build(tauri::generate_context!())
         .expect("failed to build tauri app")
-        .run(|_app_handle, _event| {});
+        .run(|_app_handle, event| {
+            if let tauri::RunEvent::Exit = event {
+                voice::server::stop_offline_server();
+                voice::server::stop_online_server();
+            }
+        });
 }

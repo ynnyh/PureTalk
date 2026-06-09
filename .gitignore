@@ -16,3 +16,10 @@ Thumbs.db
 # Env
 .env
 .env.local
+secrets.txt
+
+# Build artifacts / runtime
+src-tauri/log.txt
+
+# Design exploration
+designs/

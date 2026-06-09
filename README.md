@@ -1,6 +1,6 @@
-# 清语 / PureTalk
+# 清语输入法 / PureTalk
 
-> 纯粹的语音输入工具 — Windows 专属
+> Windows 纯粹语音输入工具 — 离线语音转文字,全局热键,即说即输
 
 [![Release](https://img.shields.io/github/v/release/ynnyh/PureTalk?label=下载)](https://github.com/ynnyh/PureTalk/releases)
 [![Website](https://img.shields.io/badge/官网-puretalk.pages.dev-blue)](https://ynnyh.github.io/PureTalk)
@@ -68,7 +68,7 @@ Apache 2.0
 
 ## English
 
-**PureTalk** is a pure, minimal voice input tool for Windows.
+**PureTalk** is a pure, minimal voice input method for Windows — offline speech-to-text with a global hotkey.
 
 Press the hotkey, speak, release. Text appears where you were typing. That's it.
 
@@ -105,3 +105,7 @@ Press the hotkey, speak, release. Text appears where you were typing. That's it.
 ### License
 
 Apache 2.0
+
+---
+
+**关键词**: 语音输入法, 语音输入, 语音转文字, 离线语音识别, SenseVoice, sherpa-onnx, Windows 输入法, 语音输入工具, speech-to-text, voice input, Tauri

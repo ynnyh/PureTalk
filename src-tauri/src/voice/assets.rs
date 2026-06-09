@@ -13,6 +13,10 @@ const MODEL_URL_MIRROR: &str = "https://huggingface.co/csukuangfj/sherpa-onnx-se
 const TOKENS_URL: &str = "https://hf-mirror.com/csukuangfj/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17/resolve/main/tokens.txt";
 const TOKENS_URL_MIRROR: &str = "https://huggingface.co/csukuangfj/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17/resolve/main/tokens.txt";
 
+// 流式模型 (small bilingual zh-en zipformer)
+const STREAMING_MODEL_URL: &str = "https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-streaming-zipformer-small-bilingual-zh-en-2023-02-16.tar.bz2";
+const STREAMING_MODEL_URL_MIRROR: &str = "https://ghfast.top/https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-streaming-zipformer-small-bilingual-zh-en-2023-02-16.tar.bz2";
+
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DownloadProgress {
@@ -45,6 +49,22 @@ pub fn tokens_path() -> String {
     voice_dir().join("tokens.txt").to_string_lossy().to_string()
 }
 
+pub fn streaming_encoder_path() -> String {
+    voice_dir().join("streaming").join("encoder-epoch-99-avg-1.int8.onnx").to_string_lossy().to_string()
+}
+
+pub fn streaming_decoder_path() -> String {
+    voice_dir().join("streaming").join("decoder-epoch-99-avg-1.int8.onnx").to_string_lossy().to_string()
+}
+
+pub fn streaming_joiner_path() -> String {
+    voice_dir().join("streaming").join("joiner-epoch-99-avg-1.int8.onnx").to_string_lossy().to_string()
+}
+
+pub fn streaming_tokens_path() -> String {
+    voice_dir().join("streaming").join("bpe.model").to_string_lossy().to_string()
+}
+
 pub fn assets_ready() -> bool {
     #[cfg(windows)]
     {
@@ -57,6 +77,84 @@ pub fn assets_ready() -> bool {
         std::path::Path::new(&model_path()).exists()
             && std::path::Path::new(&tokens_path()).exists()
     }
+}
+
+pub fn streaming_assets_ready() -> bool {
+    let streaming_dir = voice_dir().join("streaming");
+    // Only consider ready if tokens.txt exists (bpe.model not supported by online server)
+    streaming_dir.join("encoder-epoch-99-avg-1.int8.onnx").exists()
+        && streaming_dir.join("decoder-epoch-99-avg-1.int8.onnx").exists()
+        && streaming_dir.join("joiner-epoch-99-avg-1.int8.onnx").exists()
+        && streaming_dir.join("tokens.txt").exists()
+}
+
+pub async fn download_streaming_model(app: &tauri::AppHandle, proxy: &str) -> Result<(), String> {
+    let dir = voice_dir();
+    let streaming_dir = dir.join("streaming");
+    std::fs::create_dir_all(&streaming_dir).map_err(|e| format!("创建 streaming 目录失败: {}", e))?;
+
+    let client = build_client(proxy)?;
+
+    // Download streaming model tarball
+    let tarball_dest = dir.join("streaming-model.tar.bz2");
+    download_with_progress(
+        &client,
+        STREAMING_MODEL_URL,
+        STREAMING_MODEL_URL_MIRROR,
+        &tarball_dest,
+        app,
+        "streaming",
+        "流式模型",
+    )
+    .await?;
+
+    // Emit extracting status
+    emit_progress(app, "streaming", "解压中...", 0, 0, 0);
+
+    // Extract tarball (contains a nested dir, need to flatten)
+    let temp_extract = dir.join("streaming-temp");
+    std::fs::create_dir_all(&temp_extract).map_err(|e| format!("创建临时目录失败: {}", e))?;
+    extract_tarball(&tarball_dest, &temp_extract)?;
+
+    // Move extracted files to streaming/ (use copy + remove to avoid cross-device link errors)
+    let extracted_dir = temp_extract.join("sherpa-onnx-streaming-zipformer-small-bilingual-zh-en-2023-02-16");
+    if extracted_dir.exists() {
+        for entry in std::fs::read_dir(&extracted_dir).map_err(|e| e.to_string())? {
+            let entry = entry.map_err(|e| e.to_string())?;
+            let src = entry.path();
+            let dest = streaming_dir.join(entry.file_name());
+
+            if src.is_file() {
+                std::fs::copy(&src, &dest).map_err(|e| format!("复制文件失败: {}", e))?;
+            } else if src.is_dir() {
+                copy_dir_recursive(&src, &dest)?;
+            }
+        }
+    }
+
+    // Cleanup
+    let _ = std::fs::remove_file(&tarball_dest);
+    let _ = std::fs::remove_dir_all(&temp_extract);
+
+    // Emit done event
+    let _ = app.emit("voice:download-done", ());
+
+    Ok(())
+}
+
+fn copy_dir_recursive(src: &std::path::Path, dest: &std::path::Path) -> Result<(), String> {
+    std::fs::create_dir_all(dest).map_err(|e| format!("创建目录失败: {}", e))?;
+    for entry in std::fs::read_dir(src).map_err(|e| e.to_string())? {
+        let entry = entry.map_err(|e| e.to_string())?;
+        let src_path = entry.path();
+        let dest_path = dest.join(entry.file_name());
+        if src_path.is_file() {
+            std::fs::copy(&src_path, &dest_path).map_err(|e| format!("复制文件失败: {}", e))?;
+        } else if src_path.is_dir() {
+            copy_dir_recursive(&src_path, &dest_path)?;
+        }
+    }
+    Ok(())
 }
 
 pub async fn download_assets(app: &tauri::AppHandle, proxy: &str) -> Result<(), String> {
