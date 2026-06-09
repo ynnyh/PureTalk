@@ -48,8 +48,8 @@ pub fn run() {
                     tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
                     tray::open_settings(&handle);
                 });
-            } else {
-                // 非首次运行：后台检查更新
+            } else if !cfg!(debug_assertions) {
+                // 非首次运行：后台检查更新（仅正式构建，dev 模式跳过）
                 let handle = app.handle().clone();
                 tauri::async_runtime::spawn(async move {
                     tokio::time::sleep(tokio::time::Duration::from_secs(3)).await;
