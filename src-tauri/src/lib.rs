@@ -8,7 +8,8 @@ pub fn run() {
     use tauri::Emitter;
 
     tauri::Builder::default()
-        .plugin(tauri_plugin_updater::Builder::new().build())
+        // TODO: 配置签名密钥后启用 updater 插件
+        // .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_autostart::init(
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
             None,
@@ -44,28 +45,8 @@ pub fn run() {
             if cfg.first_run {
                 let handle = app.handle().clone();
                 tauri::async_runtime::spawn(async move {
-                    // 等待托盘图标就绪
                     tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
                     tray::open_settings(&handle);
-                });
-            } else if !cfg!(debug_assertions) {
-                // 非首次运行：后台检查更新（仅正式构建，dev 模式跳过）
-                let handle = app.handle().clone();
-                tauri::async_runtime::spawn(async move {
-                    tokio::time::sleep(tokio::time::Duration::from_secs(3)).await;
-                    match updater::check_update(handle.clone()).await {
-                        Ok(status) if status.available => {
-                            // 发现新版本，打开设置窗口并显示更新提示
-                            let _ = handle.emit("update:available", status);
-                            tray::open_settings(&handle);
-                        }
-                        Ok(_) => {
-                            // 已是最新版本
-                        }
-                        Err(e) => {
-                            eprintln!("[updater] 检查更新失败: {}", e);
-                        }
-                    }
                 });
             }
 

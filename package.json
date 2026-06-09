@@ -1,6 +1,6 @@
 {
   "name": "puretalk",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "清语输入法 - 纯粹的语音输入工具",
   "type": "module",
   "scripts": {
