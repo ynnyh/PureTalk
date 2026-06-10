@@ -40,7 +40,7 @@ pub fn run() {
                 }
             });
 
-            // 首次运行：打开设置窗口
+            // 首次运行：打开设置窗口引导用户
             let cfg = config::load_config();
             if cfg.first_run {
                 let handle = app.handle().clone();

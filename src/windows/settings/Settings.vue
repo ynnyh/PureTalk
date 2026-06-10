@@ -43,6 +43,8 @@ const updateAvailable = ref(false)
 const updateInfo = ref<{ currentVersion: string; latestVersion: string; body: string } | null>(null)
 const checkingUpdate = ref(false)
 const installingUpdate = ref(false)
+const updateMsg = ref('')
+const updateMsgOk = ref(true)
 
 let unlistenProgress: (() => void) | null = null
 let unlistenDone: (() => void) | null = null
@@ -176,6 +178,7 @@ async function onAutostartChange() {
 
 async function checkForUpdates() {
   checkingUpdate.value = true
+  updateMsg.value = ''
   try {
     const result: any = await invoke('check_update')
     if (result.available) {
@@ -185,23 +188,29 @@ async function checkForUpdates() {
         latestVersion: result.latestVersion,
         body: result.body,
       }
+      showUpdateToast('发现新版本!', true)
     } else {
-      alert('当前已是最新版本')
+      showUpdateToast('当前已是最新版本 ✓', true)
     }
   } catch (e: any) {
-    alert('检查更新失败: ' + e)
+    showUpdateToast(String(e), false)
   } finally {
     checkingUpdate.value = false
   }
+}
+
+function showUpdateToast(msg: string, ok: boolean) {
+  updateMsgOk.value = ok
+  updateMsg.value = msg
+  setTimeout(() => { updateMsg.value = '' }, 4000)
 }
 
 async function installUpdate() {
   installingUpdate.value = true
   try {
     await invoke('install_update')
-    // If successful, app will restart automatically
   } catch (e: any) {
-    alert('安装更新失败: ' + e)
+    showUpdateToast('安装更新失败: ' + e, false)
     installingUpdate.value = false
   }
 }
@@ -321,6 +330,11 @@ function closeWindow() {
           </button>
           <button class="btn secondary" @click="updateAvailable = false">稍后</button>
         </div>
+      </div>
+
+      <!-- Update check toast -->
+      <div v-if="updateMsg" class="toast" :class="{ 'toast-ok': updateMsgOk, 'toast-err': !updateMsgOk }">
+        {{ updateMsg }}
       </div>
 
       <!-- First-run welcome -->
@@ -544,6 +558,14 @@ function closeWindow() {
   padding: 7px 16px;
   font-size: 13px;
 }
+
+.toast {
+  padding: 10px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 14px;
+  animation: fadeIn 0.2s ease;
+}
+.toast-ok { background: rgba(139,123,242,0.12); color: var(--accent); border: 1px solid rgba(139,123,242,0.25); }
+.toast-err { background: rgba(242,80,80,0.12); color: #f25050; border: 1px solid rgba(242,80,80,0.25); }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
 
 .section { margin-bottom: 18px; }
 .label {
