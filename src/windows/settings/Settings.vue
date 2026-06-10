@@ -34,6 +34,7 @@ const dl = ref<DownloadState>({ phase: '', phaseLabel: '', downloaded: 0, total:
 const saved = ref(false)
 const proxySaved = ref(false)
 const showFirstRunTip = ref(false)
+const startupToast = ref('')
 const downloadError = ref('')
 const recordingHotkey = ref(false)
 const hotkeyMsg = ref('')
@@ -107,6 +108,9 @@ onMounted(async () => {
 
   if (config.value.firstRun) {
     showFirstRunTip.value = true
+  } else {
+    startupToast.value = '清语已启动，正在运行中'
+    setTimeout(() => { startupToast.value = '' }, 2500)
   }
 
   // Listen for download progress
@@ -170,10 +174,14 @@ async function onAutostartChange() {
       await invoke('autostart_disable')
     }
   } catch (e: any) {
-    alert('设置开机自启失败: ' + e)
-    // Revert on error
+    showUpdateToast('设置开机自启失败: ' + e, false)
     config.value.autostart = !config.value.autostart
   }
+}
+
+async function toggleAutostart() {
+  config.value.autostart = !config.value.autostart
+  await onAutostartChange()
 }
 
 async function checkForUpdates() {
@@ -337,6 +345,11 @@ function closeWindow() {
         {{ updateMsg }}
       </div>
 
+      <!-- Startup toast -->
+      <div v-if="startupToast" class="toast toast-ok">
+        {{ startupToast }}
+      </div>
+
       <!-- First-run welcome -->
       <div v-if="showFirstRunTip" class="welcome">
         <p class="welcome-title">欢迎使用清语</p>
@@ -431,11 +444,11 @@ function closeWindow() {
       <!-- General Settings -->
       <section class="section">
         <label class="label">通用</label>
-        <div class="checkbox-row">
-          <label class="checkbox-label">
-            <input type="checkbox" v-model="config.autostart" @change="onAutostartChange" />
-            <span>开机自启</span>
-          </label>
+        <div class="toggle-row">
+          <span>开机自启</span>
+          <button class="toggle" :class="{ active: config.autostart }" @click="toggleAutostart" role="switch" :aria-checked="config.autostart">
+            <span class="toggle-knob"></span>
+          </button>
         </div>
         <div style="margin-top: 16px;">
           <button class="btn secondary" @click="checkForUpdates" :disabled="checkingUpdate">
@@ -664,25 +677,51 @@ function closeWindow() {
   margin-top: 12px;
 }
 
-.checkbox-label {
+.toggle-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  user-select: none;
+  justify-content: space-between;
+  margin-top: 12px;
   color: var(--txt);
   font-size: 14px;
 }
 
-.checkbox-label input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
+.toggle {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
   cursor: pointer;
-  accent-color: var(--accent);
+  padding: 0;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
-.checkbox-label:hover {
-  color: var(--accent-2);
+.toggle.active {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.toggle-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  background: var(--dim);
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.toggle.active .toggle-knob {
+  left: 22px;
+  background: #fff;
+}
+
+.toggle:hover {
+  border-color: var(--accent);
 }
 
 .btn {

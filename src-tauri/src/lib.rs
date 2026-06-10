@@ -40,15 +40,12 @@ pub fn run() {
                 }
             });
 
-            // 首次运行：打开设置窗口引导用户
-            let cfg = config::load_config();
-            if cfg.first_run {
-                let handle = app.handle().clone();
-                tauri::async_runtime::spawn(async move {
-                    tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
-                    tray::open_settings(&handle);
-                });
-            }
+            // 启动时打开设置窗口（首次引导 / 后续显示"已启动"提示）
+            let handle = app.handle().clone();
+            tauri::async_runtime::spawn(async move {
+                tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
+                tray::open_settings(&handle);
+            });
 
             Ok(())
         })
