@@ -50,7 +50,7 @@ pub fn open_settings(app: &tauri::AppHandle) {
         let _ = window.show();
         let _ = window.set_focus();
     } else {
-        let _ = tauri::WebviewWindowBuilder::new(
+        if let Ok(window) = tauri::WebviewWindowBuilder::new(
             app,
             "settings",
             tauri::WebviewUrl::App("src/windows/settings/index.html".into()),
@@ -60,6 +60,10 @@ pub fn open_settings(app: &tauri::AppHandle) {
         .center()
         .resizable(false)
         .decorations(false)
-        .build();
+        .visible(true)
+        .build()
+        {
+            let _ = window.set_focus();
+        }
     }
 }
