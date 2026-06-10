@@ -5,8 +5,6 @@ pub mod updater;
 mod voice;
 
 pub fn run() {
-    use tauri::Emitter;
-
     tauri::Builder::default()
         // TODO: 配置签名密钥后启用 updater 插件
         // .plugin(tauri_plugin_updater::Builder::new().build())
