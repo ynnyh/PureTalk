@@ -49,6 +49,7 @@ const updateMsgOk = ref(true)
 
 let unlistenProgress: (() => void) | null = null
 let unlistenDone: (() => void) | null = null
+let hotkeyRecordTimeout: ReturnType<typeof setTimeout> | null = null
 
 const isLocal = computed(() => config.value.voiceEngine === 'local')
 const isCloud = computed(() => config.value.voiceEngine === 'cloud')
@@ -278,12 +279,26 @@ function startRecordHotkey() {
   hotkeyMsg.value = ''
   ;(document.activeElement as HTMLElement | null)?.blur()
   window.addEventListener('keydown', onHotkeyKeydown, true)
+
+  // 10秒超时自动退出，防止系统保留键导致无响应
+  hotkeyRecordTimeout = setTimeout(() => {
+    if (recordingHotkey.value) {
+      stopRecordHotkey()
+      hotkeyMsgOk.value = false
+      hotkeyMsg.value = '录制超时，可能使用了系统保留键（如 Ctrl+Space），请尝试其他组合'
+      setTimeout(() => { hotkeyMsg.value = '' }, 5000)
+    }
+  }, 10000)
 }
 
 function stopRecordHotkey() {
   if (!recordingHotkey.value) return
   recordingHotkey.value = false
   window.removeEventListener('keydown', onHotkeyKeydown, true)
+  if (hotkeyRecordTimeout) {
+    clearTimeout(hotkeyRecordTimeout)
+    hotkeyRecordTimeout = null
+  }
 }
 
 async function applyHotkey(accel: string) {
@@ -389,7 +404,7 @@ function closeWindow() {
           <span v-else class="hotkey-current">{{ hotkeyDisplay }}</span>
           <span v-if="!recordingHotkey" class="hotkey-action">点击修改</span>
         </button>
-        <p class="hint">点击上方按钮,再按下你想要的组合(需含 Ctrl / Alt 等修饰键)。</p>
+        <p class="hint">点击上方按钮，再按下你想要的组合（需含 Ctrl/Alt 等修饰键）。注意：部分系统保留键（如 Ctrl+Space）可能无法使用，请尝试其他组合。</p>
         <p class="hotkey-msg" :class="{ err: !hotkeyMsgOk }" v-if="hotkeyMsg">{{ hotkeyMsg }}</p>
       </section>
 
